@@ -1,6 +1,5 @@
 package com.example.myecosysgrad.configuration;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -55,7 +54,6 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint()) // điều hướng user khi
                 // authen failed
                 );
-
 
         return httpSecurity.build();
     }
