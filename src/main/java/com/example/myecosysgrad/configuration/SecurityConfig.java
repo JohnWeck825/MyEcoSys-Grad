@@ -1,5 +1,7 @@
 package com.example.myecosysgrad.configuration;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,8 +18,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -66,14 +66,13 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
 
-
     @Bean
-    public CorsFilter corsFilter(){
+    public CorsFilter corsFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
-//        corsConfiguration.addAllowedOrigin("*");
-//        corsConfiguration.addAllowedHeader("*");
-//        corsConfiguration.addAllowedMethod("*");
+        //        corsConfiguration.addAllowedOrigin("*");
+        //        corsConfiguration.addAllowedHeader("*");
+        //        corsConfiguration.addAllowedMethod("*");
 
         corsConfiguration.setAllowedOriginPatterns(List.of("*"));
         corsConfiguration.setAllowedMethods(List.of("*"));

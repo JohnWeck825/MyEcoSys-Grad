@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,27 +46,34 @@ public class UserService {
 
     @Transactional
     public UserResponse createUser(UserCreationRequest request) {
+        try {
+            if (userRepository.existsByUsername(request.getUsername())) {
+                throw new AppException(ErrorCode.USER_EXISTED);
+            }
 
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new AppException(ErrorCode.USER_EXISTED);
+            User user = userMapper.toUser(request);
+            User savedUser = userRepository.save(user);
+
+            //        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+            Set<Role> roles = roleRepository.findAllByNameIn(request.getRoles());
+
+            Set<UserRole> userRoles =
+                    roles.stream().map(r -> new UserRole(savedUser, r)).collect(Collectors.toSet());
+            userRoleRepository.saveAll(userRoles);
+            savedUser.setUserRoles(userRoles);
+            User reloaded = userRepository
+                    .findById(savedUser.getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+            return userMapper.toUserResponse(reloaded);
+        } catch (DataIntegrityViolationException exception) {
+            // Xử lý trường hợp trùng username do race condition
+            if (userRepository.existsByUsername(request.getUsername())) {
+                throw new AppException(ErrorCode.USER_EXISTED);
+            }
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
-
-        User user = userMapper.toUser(request);
-        User savedUser = userRepository.save(user);
-
-        //        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        Set<Role> roles = roleRepository.findAllByNameIn(request.getRoles());
-
-        Set<UserRole> userRoles =
-                roles.stream().map(r -> new UserRole(savedUser, r)).collect(Collectors.toSet());
-        userRoleRepository.saveAll(userRoles);
-        savedUser.setUserRoles(userRoles);
-        User reloaded = userRepository
-                .findById(savedUser.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        return userMapper.toUserResponse(reloaded);
     }
 
     public UserResponse getMyInfo() {
@@ -86,7 +93,7 @@ public class UserService {
 
     // @PreAuthorize xảy ra trước hàm, @PostAuthorize xảy ra sau hàm
 
-    @PostAuthorize("returnObject.username == authentication.name || hasRole('ADMIN')")
+    //    @PostAuthorize("returnObject.username == authentication.name || hasRole('ADMIN')")
     // nếu đã đăng nhập, sẽ chỉ lấy được thông tin của chính mình  hoặc có quyền admin
     public UserResponse getUserById(String id) { // returnObject = UserResponse (returnObject.username =
         // UserResponse.username)

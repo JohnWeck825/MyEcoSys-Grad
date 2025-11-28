@@ -28,7 +28,9 @@ public class User {
     @EqualsAndHashCode.Include
     String id;
 
+    @Column(name = "username", unique = true, columnDefinition = "varchar(255) collate utf8mb4_unicode_ci not null")
     String username;
+
     String password;
     String firstname;
     String lastname;
