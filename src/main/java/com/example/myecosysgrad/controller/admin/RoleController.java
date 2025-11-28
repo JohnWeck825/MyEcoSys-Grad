@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.myecosysgrad.dto.admin.request.RoleRequest;
+import com.example.myecosysgrad.dto.admin.response.RoleOptionResponse;
 import com.example.myecosysgrad.dto.admin.response.RoleResponse;
 import com.example.myecosysgrad.dto.api.request.ApiResponse;
 import com.example.myecosysgrad.service.admin.RoleService;
@@ -50,5 +51,11 @@ public class RoleController {
         return ApiResponse.<RoleResponse>builder()
                 .result(roleService.updateRole(id, roleRequest))
                 .build();
+    }
+
+    // Lấy danh sách Role cho create user và update user
+    @GetMapping("/options")
+    ApiResponse<List<RoleOptionResponse>> getRoleOptions() {
+        return ApiResponse.success(roleService.getRoleOptions());
     }
 }

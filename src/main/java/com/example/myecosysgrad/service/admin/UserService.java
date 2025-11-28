@@ -57,7 +57,7 @@ public class UserService {
             //        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
             user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-            Set<Role> roles = roleRepository.findAllByNameIn(request.getRoles());
+            Set<Role> roles = roleRepository.findAllByIdIn(request.getRoles());
 
             Set<UserRole> userRoles =
                     roles.stream().map(r -> new UserRole(savedUser, r)).collect(Collectors.toSet());
@@ -97,7 +97,7 @@ public class UserService {
     // nếu đã đăng nhập, sẽ chỉ lấy được thông tin của chính mình  hoặc có quyền admin
     public UserResponse getUserById(String id) { // returnObject = UserResponse (returnObject.username =
         // UserResponse.username)
-        log.info("In method getUserById");
+        //        log.info("In method getUserById");
         return userMapper.toUserResponse(
                 userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
     }
@@ -111,7 +111,7 @@ public class UserService {
 
         //        existingUser.getUserRoles().clear();
 
-        Set<Role> desiredRoles = roleRepository.findAllByNameIn(request.getRoles());
+        Set<Role> desiredRoles = roleRepository.findAllByIdIn(request.getRoles());
         existingUser.getUserRoles().removeIf(ur -> !desiredRoles.contains(ur.getRole()));
         desiredRoles.forEach(r -> {
             if (existingUser.getUserRoles().stream()
@@ -119,6 +119,10 @@ public class UserService {
                 existingUser.getUserRoles().add(new UserRole(existingUser, r));
             }
         });
+
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
 
         User reloaded = userRepository
                 .findById(existingUser.getId())

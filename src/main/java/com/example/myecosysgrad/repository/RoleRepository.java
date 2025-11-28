@@ -20,4 +20,9 @@ public interface RoleRepository extends JpaRepository<Role, Integer> {
     Set<Role> findRolesByPermissionId(@Param("permissionId") Integer permissionId);
 
     boolean existsRoleByName(String name);
+
+    Set<Role> findAllById(Integer id);
+
+    @Query("SELECT r FROM Role r WHERE r.id IN :ids")
+    Set<Role> findAllByIdIn(Set<Integer> ids);
 }

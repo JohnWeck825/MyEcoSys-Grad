@@ -33,5 +33,5 @@ public class UserCreationRequest {
 
     //    String phone;
 
-    Set<String> roles;
+    Set<Integer> roles;
 }

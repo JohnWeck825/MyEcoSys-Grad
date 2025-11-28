@@ -19,5 +19,5 @@ public class UserUpdateRequest {
     //    String email;
     LocalDate dob;
     //    String phone;
-    Set<String> roles;
+    Set<Integer> roles;
 }

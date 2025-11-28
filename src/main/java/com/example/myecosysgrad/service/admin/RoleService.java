@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.myecosysgrad.dto.admin.request.RoleRequest;
+import com.example.myecosysgrad.dto.admin.response.RoleOptionResponse;
 import com.example.myecosysgrad.dto.admin.response.RoleResponse;
 import com.example.myecosysgrad.exception.AppException;
 import com.example.myecosysgrad.exception.ErrorCode;
@@ -133,6 +134,17 @@ public class RoleService {
         Role reloaded = roleRepository.findById(existingRole.getId()).get();
 
         return roleMapper.toRoleResponse(reloaded);
+    }
+
+    // Lấy danh sách Role cho create user và update user
+    public List<RoleOptionResponse> getRoleOptions() {
+        return roleRepository.findAll().stream()
+                .map(role -> RoleOptionResponse.builder()
+                        .id(role.getId())
+                        .name(role.getName())
+                        .description(role.getDescription())
+                        .build())
+                .toList();
     }
 
     @Transactional
