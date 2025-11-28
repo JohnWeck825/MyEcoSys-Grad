@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.myecosysgrad.dto.admin.request.PermissionRequest;
+import com.example.myecosysgrad.dto.admin.response.PermissionOptionResponse;
 import com.example.myecosysgrad.dto.admin.response.PermissionResponse;
 import com.example.myecosysgrad.exception.AppException;
 import com.example.myecosysgrad.exception.ErrorCode;
@@ -96,6 +97,16 @@ public class PermissionService {
         //        });
 
         return permissionMapper.toPermissionResponse(existingPermission);
+    }
+
+    public List<PermissionOptionResponse> getPermissionOptions() {
+        return permissionRepository.findAll().stream()
+                .map(permission -> PermissionOptionResponse.builder()
+                        .id(permission.getId())
+                        .name(permission.getName())
+                        .description(permission.getDescription())
+                        .build())
+                .toList();
     }
 
     @Transactional

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.myecosysgrad.dto.admin.request.PermissionRequest;
+import com.example.myecosysgrad.dto.admin.response.PermissionOptionResponse;
 import com.example.myecosysgrad.dto.admin.response.PermissionResponse;
 import com.example.myecosysgrad.dto.api.request.ApiResponse;
 import com.example.myecosysgrad.service.admin.PermissionService;
@@ -48,5 +49,10 @@ public class PermissionController {
     ApiResponse<Void> deletePermission(@PathVariable Integer id) {
         permissionService.deletePermission(id);
         return ApiResponse.<Void>builder().build();
+    }
+
+    @GetMapping("/options")
+    ApiResponse<List<PermissionOptionResponse>> getPermissionOptions() {
+        return ApiResponse.success(permissionService.getPermissionOptions());
     }
 }

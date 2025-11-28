@@ -104,31 +104,36 @@ public class UserService {
 
     @Transactional
     public UserResponse updateUser(String id, UserUpdateRequest request) {
-        User existingUser = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        try {
+            User existingUser =
+                    userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        userMapper.updateUser(existingUser, request);
-        existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        //        existingUser.getUserRoles().clear();
-
-        Set<Role> desiredRoles = roleRepository.findAllByIdIn(request.getRoles());
-        existingUser.getUserRoles().removeIf(ur -> !desiredRoles.contains(ur.getRole()));
-        desiredRoles.forEach(r -> {
-            if (existingUser.getUserRoles().stream()
-                    .noneMatch(ur -> ur.getRole().equals(r))) {
-                existingUser.getUserRoles().add(new UserRole(existingUser, r));
-            }
-        });
-
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            userMapper.updateUser(existingUser, request);
             existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+
+            //        existingUser.getUserRoles().clear();
+
+            Set<Role> desiredRoles = roleRepository.findAllByIdIn(request.getRoles());
+            existingUser.getUserRoles().removeIf(ur -> !desiredRoles.contains(ur.getRole()));
+            desiredRoles.forEach(r -> {
+                if (existingUser.getUserRoles().stream()
+                        .noneMatch(ur -> ur.getRole().equals(r))) {
+                    existingUser.getUserRoles().add(new UserRole(existingUser, r));
+                }
+            });
+
+            if (request.getPassword() != null && !request.getPassword().isBlank()) {
+                existingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+            }
+
+            User reloaded = userRepository
+                    .findById(existingUser.getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+            return userMapper.toUserResponse(reloaded);
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
-
-        User reloaded = userRepository
-                .findById(existingUser.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        return userMapper.toUserResponse(reloaded);
     }
 
     public void deleteUser(String id) {
