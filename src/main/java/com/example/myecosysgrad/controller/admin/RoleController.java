@@ -2,6 +2,7 @@ package com.example.myecosysgrad.controller.admin;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,10 +28,14 @@ public class RoleController {
     RoleService roleService;
 
     @GetMapping()
-    ApiResponse<List<RoleResponse>> getRoles() {
-        return ApiResponse.<List<RoleResponse>>builder()
-                .result(roleService.getRoles())
-                .build();
+    ApiResponse<Page<RoleResponse>> getRoles(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "5") Integer size,
+            @RequestParam(defaultValue = "name") String softField,
+            @RequestParam(defaultValue = "asc") String softDir
+    ) {
+        return ApiResponse.success(roleService.getRoles(keyword, page, size, softField, softDir));
     }
 
     @PostMapping("/create")

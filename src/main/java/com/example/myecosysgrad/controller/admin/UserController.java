@@ -4,6 +4,7 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.myecosysgrad.dto.admin.request.UserCreationRequest;
@@ -25,17 +26,28 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
     UserService userService;
 
-    @GetMapping()
-    ApiResponse<List<UserResponse>> getUsers() {
-        //        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        //        log.info("Username: {}", authentication.getName());
-        //        authentication.getAuthorities().forEach(grantedAuthority -> log.info("Role: {}",
-        // grantedAuthority.getAuthority()));
+//    @GetMapping()
+//    ApiResponse<List<UserResponse>> getUsers() {
+//        //        var authentication = SecurityContextHolder.getContext().getAuthentication();
+//        //        log.info("Username: {}", authentication.getName());
+//        //        authentication.getAuthorities().forEach(grantedAuthority -> log.info("Role: {}",
+//        // grantedAuthority.getAuthority()));
+//
+//        //        return ApiResponse.<List<UserResponse>>builder()
+//        //                .result(userService.getUsers())
+//        //                .build();
+//        return ApiResponse.success(userService.getUsers());
+//    }
 
-        //        return ApiResponse.<List<UserResponse>>builder()
-        //                .result(userService.getUsers())
-        //                .build();
-        return ApiResponse.success(userService.getUsers());
+    @GetMapping()
+    ApiResponse<Page<UserResponse>> getUsers(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "5") Integer size,
+            @RequestParam(defaultValue = "username") String softField,
+            @RequestParam(defaultValue = "asc") String softDir
+    ) {
+        return ApiResponse.success(userService.getUsers(keyword, page, size, softField, softDir));
     }
 
     @PostMapping("/create")

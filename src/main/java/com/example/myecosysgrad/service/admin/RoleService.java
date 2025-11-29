@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.*;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,8 +96,27 @@ public class RoleService {
         return roleMapper.toRoleResponse(reloaded);
     }
 
-    public List<RoleResponse> getRoles() {
-        return roleRepository.findAll().stream().map(roleMapper::toRoleResponse).toList();
+    public Page<RoleResponse> getRoles(String keyword,
+                                       Integer page,
+                                       Integer size,
+                                       String softField,
+                                       String softDir) {
+
+        Sort sort = softDir.equalsIgnoreCase("asc")
+                ? Sort.by(softField).ascending()
+                : Sort.by(softField).descending();
+
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+
+        Page<Role> roles;
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            roles = roleRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        } else {
+            roles = roleRepository.findAll(pageable);
+        }
+
+        return roles.map(roleMapper::toRoleResponse);
     }
 
     @Transactional

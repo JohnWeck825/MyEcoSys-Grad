@@ -1,5 +1,9 @@
 package com.example.myecosysgrad.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GenerationType;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -8,6 +12,8 @@ import java.util.Set;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.proxy.HibernateProxy;
 
 import lombok.*;
@@ -21,37 +27,30 @@ import org.springframework.data.annotation.LastModifiedDate;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "users")
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User {
-
+public class ProductImage {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    String id;
+    private Integer id;
 
-    @Column(name = "username", unique = true, columnDefinition = "varchar(255) collate utf8mb4_unicode_ci not null")
-    String username;
+    // URL đầy đủ của ảnh sau khi upload (bắt buộc khi lưu ảnh trên cloud)
+    @Column(length = 500, nullable = false)
+    private String imageUrl;
 
-    String password;
-    String firstname;
-    String lastname;
-    //    String email;
-    LocalDate dob;
+    // thứ tự hiển thị ảnh (vd ảnh thứ 1 là ảnh đại diện, 2-3-4 là ảnh phụ)
+    @Column(nullable = false)
+    private Integer position;
 
-    //    String phone;
+    // Có phải ảnh chính (thumbnail) không
+    private Boolean isMain;
 
-    @CreatedDate
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    Set<UserRole> userRoles = new LinkedHashSet<>();
+    private Product product;
 
     @Override
     public final boolean equals(Object o) {
@@ -64,17 +63,17 @@ public class User {
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        User user = (User) o;
-        return getId() != null && Objects.equals(getId(), user.getId());
+        UserRole userRole = (UserRole) o;
+        return getId() != null && Objects.equals(getId(), userRole.getId());
     }
 
     @Override
     public final int hashCode() {
         return this instanceof HibernateProxy
                 ? ((HibernateProxy) this)
-                        .getHibernateLazyInitializer()
-                        .getPersistentClass()
-                        .hashCode()
+                .getHibernateLazyInitializer()
+                .getPersistentClass()
+                .hashCode()
                 : getClass().hashCode();
     }
 }

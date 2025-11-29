@@ -1,7 +1,14 @@
 package com.example.myecosysgrad.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GenerationType;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import jakarta.persistence.*;
 
@@ -10,43 +17,49 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.proxy.HibernateProxy;
 
 import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Getter
 @Setter
-@ToString
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
-@Table(
-        name = "user_role",
-        indexes = {
-                @Index(name = "idx_user_role_user_id", columnList = "user_id"),
-                @Index(name = "idx_user_role_role_id", columnList = "role_id"),
-                @Index(name = "uq_user_role", columnList = "user_id,role_id", unique = true)
-        })
-public class UserRole {
+@NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    User user;
+    @Column(name = "name", unique = true)
+    private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id", referencedColumnName = "id")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    Role role;
+    @Column(length = 200)
+    private String photoUrl;
 
-    public UserRole(User user, Role role) {
-        this.user = user;
-        this.role = role;
-    }
+    @Column(length = 200)
+    private String slug;
+
+    private boolean active;
+
+    @Column(length = 200)
+    private String allParentCategoryIds;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "parent_id")
+    private Category parent;
+
+    @OneToMany(mappedBy = "parent",fetch = FetchType.LAZY)
+    @OrderBy(value = "name asc")
+    private Set<Category> subCategories = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    Set<CategoryBrand> categoryBrands = new LinkedHashSet<>();
 
     @Column(name = "created_at")
     @CreationTimestamp
@@ -57,6 +70,19 @@ public class UserRole {
     @UpdateTimestamp
     //    @ColumnDefault("CURRENT_TIMESTAMP")/
     private LocalDateTime updatedAt;
+
+
+    @Transient
+    @Getter
+    @Setter
+    private boolean hasChildren;
+
+    @Transient
+    @Getter
+    @Setter
+    private boolean hasBrand;
+
+
 
     @Override
     public final boolean equals(Object o) {
@@ -69,8 +95,8 @@ public class UserRole {
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        UserRole userRole = (UserRole) o;
-        return getId() != null && Objects.equals(getId(), userRole.getId());
+        Role role = (Role) o;
+        return getId() != null && Objects.equals(getId(), role.getId());
     }
 
     @Override

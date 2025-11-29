@@ -1,5 +1,9 @@
 package com.example.myecosysgrad.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GenerationType;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -8,6 +12,8 @@ import java.util.Set;
 
 import jakarta.persistence.*;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.proxy.HibernateProxy;
 
 import lombok.*;
@@ -18,40 +24,43 @@ import org.springframework.data.annotation.LastModifiedDate;
 @Entity
 @Getter
 @Setter
-@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "users")
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User {
+public class Series {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    String id;
+    private Integer id;
 
-    @Column(name = "username", unique = true, columnDefinition = "varchar(255) collate utf8mb4_unicode_ci not null")
-    String username;
+    private String name;
 
-    String password;
-    String firstname;
-    String lastname;
-    //    String email;
-    LocalDate dob;
+    private String slug;
 
-    //    String phone;
+    private boolean active;
 
-    @CreatedDate
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "brand_id")
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    Set<UserRole> userRoles = new LinkedHashSet<>();
+    private Brand brand;
+
+//    @OneToMany(mappedBy = "series", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+//    @EqualsAndHashCode.Exclude
+//    @ToString.Exclude
+//    Set<Product> products = new LinkedHashSet<>();
+
+    @Column(name = "created_at")
+    @CreationTimestamp
+    //    @ColumnDefault("CURRENT_TIMESTAMP")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    @UpdateTimestamp
+    //    @ColumnDefault("CURRENT_TIMESTAMP")/
+    private LocalDateTime updatedAt;
 
     @Override
     public final boolean equals(Object o) {
@@ -64,17 +73,17 @@ public class User {
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        User user = (User) o;
-        return getId() != null && Objects.equals(getId(), user.getId());
+        Role role = (Role) o;
+        return getId() != null && Objects.equals(getId(), role.getId());
     }
 
     @Override
     public final int hashCode() {
         return this instanceof HibernateProxy
                 ? ((HibernateProxy) this)
-                        .getHibernateLazyInitializer()
-                        .getPersistentClass()
-                        .hashCode()
+                .getHibernateLazyInitializer()
+                .getPersistentClass()
+                .hashCode()
                 : getClass().hashCode();
     }
 }

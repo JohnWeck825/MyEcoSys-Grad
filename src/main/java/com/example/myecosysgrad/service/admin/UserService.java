@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -86,9 +87,32 @@ public class UserService {
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('CREATE_DATA')")
-    public List<UserResponse> getUsers() {
-        log.info("In method getUsers");
-        return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
+//    public List<UserResponse> getUsers() {
+//        log.info("In method getUsers");
+//        return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
+//    }
+
+    public Page<UserResponse> getUsers(String keyword,
+                                       Integer page,
+                                       Integer size,
+                                       String softField,
+                                       String softDir) {
+
+        Sort sort = softDir.equalsIgnoreCase("asc")
+                ? Sort.by(softField).ascending()
+                : Sort.by(softField).descending();
+
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+
+        Page<User> users;
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            users = userRepository.findByUsernameContainingIgnoreCase(keyword, pageable);
+        } else {
+            users = userRepository.findAll(pageable);
+        }
+
+        return users.map(userMapper::toUserResponse);
     }
 
     // @PreAuthorize xảy ra trước hàm, @PostAuthorize xảy ra sau hàm

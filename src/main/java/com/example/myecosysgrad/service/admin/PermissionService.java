@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityManagerFactory;
 
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,10 +46,27 @@ public class PermissionService {
         return permissionMapper.toPermissionResponse(permission);
     }
 
-    public List<PermissionResponse> getPermissions() {
-        return permissionRepository.findAll().stream()
-                .map(permissionMapper::toPermissionResponse)
-                .toList();
+    public Page<PermissionResponse> getPermissions(String keyword,
+                                                   Integer page,
+                                                   Integer size,
+                                                   String softField,
+                                                   String softDir) {
+
+        Sort sort = softDir.equalsIgnoreCase("asc")
+                ? Sort.by(softField).ascending()
+                : Sort.by(softField).descending();
+
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+
+        Page<Permission> permissions;
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            permissions = permissionRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        } else {
+            permissions = permissionRepository.findAll(pageable);
+        }
+
+        return permissions.map(permissionMapper::toPermissionResponse);
     }
 
     @Transactional

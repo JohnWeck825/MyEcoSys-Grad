@@ -1,7 +1,15 @@
 package com.example.myecosysgrad.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GenerationType;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import jakarta.persistence.*;
 
@@ -10,6 +18,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.proxy.HibernateProxy;
 
 import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
 @Getter
@@ -19,34 +30,30 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(
-        name = "user_role",
+        name = "category_brand",
         indexes = {
-                @Index(name = "idx_user_role_user_id", columnList = "user_id"),
-                @Index(name = "idx_user_role_role_id", columnList = "role_id"),
-                @Index(name = "uq_user_role", columnList = "user_id,role_id", unique = true)
+                @Index(name = "idx_category_brand_category_id", columnList = "category_id"),
+                @Index(name = "idx_category_brand_brand_id", columnList = "brand_id"),
+                @Index(name = "uq_category_brand", columnList = "category_id,brand_id", unique = true)
         })
-public class UserRole {
+public class CategoryBrand {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    User user;
+    Category category;
 
     @ManyToOne
-    @JoinColumn(name = "role_id", referencedColumnName = "id")
+    @JoinColumn(name = "brand_id", referencedColumnName = "id")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    Role role;
-
-    public UserRole(User user, Role role) {
-        this.user = user;
-        this.role = role;
-    }
+    Brand brand;
 
     @Column(name = "created_at")
     @CreationTimestamp
@@ -69,8 +76,8 @@ public class UserRole {
                 ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass()
                 : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        UserRole userRole = (UserRole) o;
-        return getId() != null && Objects.equals(getId(), userRole.getId());
+        Role role = (Role) o;
+        return getId() != null && Objects.equals(getId(), role.getId());
     }
 
     @Override

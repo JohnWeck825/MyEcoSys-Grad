@@ -2,6 +2,7 @@ package com.example.myecosysgrad.controller.admin;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.myecosysgrad.dto.admin.request.PermissionRequest;
@@ -24,10 +25,14 @@ public class PermissionController {
     PermissionService permissionService;
 
     @GetMapping()
-    ApiResponse<List<PermissionResponse>> getPermissions() {
-        return ApiResponse.<List<PermissionResponse>>builder()
-                .result(permissionService.getPermissions())
-                .build();
+    ApiResponse<Page<PermissionResponse>> getPermissions(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "5") Integer size,
+            @RequestParam(defaultValue = "name") String softField,
+            @RequestParam(defaultValue = "asc") String softDir
+    ) {
+        return ApiResponse.success(permissionService.getPermissions(keyword, page, size, softField, softDir));
     }
 
     @PostMapping("/create")
